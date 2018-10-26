@@ -52,6 +52,7 @@ def write(inWeek, day, dayN):
 
 # Goes to police website downloads the data, converts .pdf to .txt, and makes a backup of the .txt, and cleans up
 def getData():
+# Formating the date to use it in a url 
     today = date.today()
     next_Monday = today + relativedelta(weekday=MO(+1))
     monday = next_Monday.strftime("%d%m20%y")
