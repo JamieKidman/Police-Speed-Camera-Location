@@ -22,7 +22,7 @@ def split(arr, size):
 def write(inWeek, day, dayN):
     inWeek = inWeek[:len(inWeek)-len(".txt")]
 
-    filePath = "/home/jamie/Documents/WebBusiness/Police/Parsed/" + str(inWeek) + "/"
+    filePath = "./Parsed/" + str(inWeek) + "/"
     directory = os.path.dirname(filePath)
 
     try:
@@ -30,7 +30,7 @@ def write(inWeek, day, dayN):
     except:
         os.mkdir(directory)
 
-    filePath = "/home/jamie/Documents/WebBusiness/Police/Parsed/" + str(inWeek) + "/" + dayN
+    filePath = "./Parsed/" + str(inWeek) + "/" + dayN
     directory = os.path.dirname(filePath)
 
     try:
@@ -70,13 +70,13 @@ def getData():
 
 # If the size is smaller then the file is empty
     if(len(r.content) > 27580):
-        with open("/home/jamie/Documents/WebBusiness/Police/" + date_Monday + ".pdf", 'wb') as f:
+        with open("./" + date_Monday + ".pdf", 'wb') as f:
             f.write(r.content)
 
-        os.system("pdftotext -layout /home/jamie/Documents/WebBusiness/Police/" + date_Monday + ".pdf")
-        os.system("cp /home/jamie/Documents/WebBusiness/Police/" + date_Monday + ".txt" + " " + "/home/jamie/Documents/WebBusiness/Police/Backups")
+        os.system("pdftotext -layout ./" + date_Monday + ".pdf")
+        os.system("cp ./" + date_Monday + ".txt" + " " + "./Backups")
 
-        os.system("rm -f /home/jamie/Documents/WebBusiness/Police/" + date_Monday + ".pdf")
+        os.system("rm -f ./" + date_Monday + ".pdf")
 
     else:
         print("DATA NOT WRITTEN, TRY AGAIN LATER")
@@ -84,7 +84,7 @@ def getData():
 
 # This Reads all the text files in the dir
 def txt():
-    os.chdir("/home/jamie/Documents/WebBusiness/Police/")
+    os.chdir("./")
     for file in glob.glob("*.txt"):
         main(file)
 
