@@ -3,7 +3,7 @@ Downloads and parses a web downlaod with the speed camera locations of Western A
 
 Get_Locations:
 To Run, "python3 Get_Locations.py"
-Currently it can only runs on Sunday. Which isn't an issue for me as I use crontab to run it (Essentailly auto run for linux).
+Will print error if the pdf hasn't been uploaded by the police yet for the week. It isn't an issue for me as I use crontab to run it on sunday (Essentailly auto run for linux).
 Uses these imports; datetime, re, glob, os, requests, dateutil.
 Only Ran on Linux (Arch and Debian).
 Must have pdftotext also.
