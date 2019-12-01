@@ -8,7 +8,7 @@ from dateutil.relativedelta import relativedelta, MO
 
 
 # This is used to parse a list, [[Location, Suburb][Location, Suburb]] to [Location, Suburb][Location, Suburb]
-# Just a heads up this Isn't my own code stack overflow I believe
+# Just a heads up this Isn't my own code
 def split(arr, size):
     arrs = []
     while len(arr) > size:
@@ -22,7 +22,7 @@ def split(arr, size):
 def write(inWeek, day, dayN):
     inWeek = inWeek[:len(inWeek)-len(".txt")]
 
-    filePath = "./Parsed/" + str(inWeek) + "/"
+    filePath = "/home/jamie/Documents/WebBusiness/Police/Parsed/" + str(inWeek) +"/"
     directory = os.path.dirname(filePath)
 
     try:
@@ -30,7 +30,7 @@ def write(inWeek, day, dayN):
     except:
         os.mkdir(directory)
 
-    filePath = "./Parsed/" + str(inWeek) + "/" + dayN
+    filePath = "/home/jamie/Documents/WebBusiness/Police/Parsed/" + str(inWeek) + "/" + dayN
     directory = os.path.dirname(filePath)
 
     try:
@@ -40,52 +40,58 @@ def write(inWeek, day, dayN):
 
     f = open(filePath, "w+")
 
-# Starting at 1 as the cops changed the format so that the date appears as date (large space) then the day
+#starting at 1 as the check fucking cops changed there format so that the date appears as date (large space) then the day
     for i in range(1, len(day)):
         f.write(day[i][1] + ",  \t" + day[i][0])
         f.write("\n")
 
     f.close()
-# Re-sorts the file as Location is before Street with the new pre-proccessing
+
     os.system("sort " + filePath + " -o " + filePath)
 
 
-# Goes to police website downloads the data, converts .pdf to .txt, and makes a backup of the .txt, and cleans up
+# Goes to police website downloads the data, converts .pdf to .txt, and makes backups of .txt's, and cleans up
 def getData():
-# Formating the date to use it in a url 
     today = date.today()
-    next_Monday = today + relativedelta(weekday=MO(+1))
-    monday = next_Monday.strftime("%d%m20%y")
+    nextMonday = today + relativedelta(weekday=MO(+1))
+    monday = nextMonday.strftime("%d%m%Y")
 
-    raw_date_Monday = datetime.datetime.strptime(monday, "%d%m%Y")
-    raw_date_Sunday = raw_date_Monday + datetime.timedelta(days=6)
+    odateMon = datetime.datetime.strptime(monday, "%d%m%Y")
+    odateSun = odateMon + datetime.timedelta(days=6)
 
-    holder_Date = raw_date_Sunday
-    date_Sunday = holder_Date.strftime('%d%m%Y')
+    dt = odateSun
+    dateSun = dt.strftime('%d%m%Y')
 
-    holder_Date = raw_date_Monday
-    date_Monday = holder_Date.strftime('%d%m%Y')
+    dt = odateMon
+    dateMon = dt.strftime('%d%m%Y')
 
-    url = "https://www.police.wa.gov.au/~/media/Files/Police/Traffic/Cameras/Camera-Locations/MediaLocations-" + date_Monday + "-to-" + date_Sunday + ".pdf?la=en"
+# Fixed it properly so that even if they change the url the program will still run
+# Assumes that the first pdf file is the pdf it wants.
+    os.system("curl https://www.police.wa.gov.au/Traffic/Cameras/Camera-locations | grep .pdf? > /home/jamie/Documents/WebBusiness/Police/haystack")
+    haystack = open("/home/jamie/Documents/WebBusiness/Police/haystack", "r")
+
+    url = "https://www.police.wa.gov.au/" + haystack.read().split("\"")[1]
     r = requests.get(url, stream=True)
 
-# If the size is smaller then the file is empty
+    # dateMon = (re.findall(r"[0-9]{6}", url)[0])
+    print(dateMon)
+
     if(len(r.content) > 27580):
-        with open("./" + date_Monday + ".pdf", 'wb') as f:
+        with open("/home/jamie/Documents/WebBusiness/Police/" + dateMon + ".pdf", 'wb') as f:
             f.write(r.content)
 
-        os.system("pdftotext -layout ./" + date_Monday + ".pdf")
-        os.system("cp ./" + date_Monday + ".txt" + " " + "./Backups")
+        os.system("pdftotext -layout /home/jamie/Documents/WebBusiness/Police/" + dateMon + ".pdf")
+        os.system("cp /home/jamie/Documents/WebBusiness/Police/" + dateMon + ".txt" + " " + "/home/jamie/Documents/WebBusiness/Police/Backups")
 
-        os.system("rm -f ./" + date_Monday + ".pdf")
-
+        os.system("rm -f /home/jamie/Documents/WebBusiness/Police/" + dateMon + ".pdf")
+    
     else:
         print("DATA NOT WRITTEN, TRY AGAIN LATER")
 
 
-# This Reads all the text files in the dir
+# So far this Reads all the text files in the dir good for bulk ingest
 def txt():
-    os.chdir("./")
+    os.chdir("/home/jamie/Documents/WebBusiness/Police/")
     for file in glob.glob("*.txt"):
         main(file)
 
@@ -107,70 +113,69 @@ def main(inFile):
         f = open(inputFile, "r")
         inLines = f.readlines()
         f.close()
-
         os.system("rm -f " + inputFile)
 
-        raw_Dictionary = {}
+        rawD = {}
+        rawL = []
 
-# Yes... Its a dictionary, should you use a list, yes. can you. No. I assume it has something to do with the structure of the text.
+# For the record I have no clue why it has to be read in as a dictionary but it errors out if changed to a list
+
         for i in range(0, len(inLines)):
             inLines[i] = re.sub(r"[ \t]{2,}", r", ", inLines[i].rstrip())
-            raw_Dictionary[i] = inLines[i].split(", ")
+            rawD[i] = inLines[i].split(", ")
 
-        for i in range(0, len(raw_Dictionary)):
-            if (len(raw_Dictionary[i]) > 0) and raw_Dictionary[i][0] != "":
-                if(len(raw_Dictionary[i][0]) > 0):
-                    if(raw_Dictionary[i][0] == "Street Name"):
-                        raw_Dictionary[i] = [""]
+        for i in range(0, len(rawD)):
+            if (len(rawD[i]) > 0) and rawD[i][0] != "":
+                if(len(rawD[i][0]) > 0):
+                    if(rawD[i][0] == "Street Name"):
+                        rawD[i] = [""]
 
-                    if(raw_Dictionary[i][0] == "Location"):
-                        raw_Dictionary[i] = [""]
+                    if(rawD[i][0] == "Location"):
+                        rawD[i] = [""]
 
-                    if(len(raw_Dictionary[i]) > 2):
-                        if(raw_Dictionary[i][2] == "Location"):
-                            raw_Dictionary[i] = [""]
+                    if(len(rawD[i]) > 2):
+                        if(rawD[i][2] == "Location"):
+                            rawD[i] = [""]
 
-# Crashes if list isn't "declared"
-        parsed_List = []
-        parsed_List = list(raw_Dictionary.values())
+
+        rawL = list(rawD.values())
 
         i = 0
-        while i < len(parsed_List):
-            if("" in parsed_List[i]):
-                del parsed_List[i]
+        while i < len(rawL):
+            if("" in rawL[i]):
+                del rawL[i]
             else:
                 i += 1
 
 # Sets a day value based on the last day thats been read
-        for i in range(0, len(parsed_List)):
-            if("Monday" in parsed_List[i][0]):
+        for i in range(0, len(rawL)):
+            if("Monday" in rawL[i][0]):
                 day = 0
-            if("Tuesday" in parsed_List[i][0]):
+            if("Tuesday" in rawL[i][0]):
                 day = 1
-            if("Wednesday" in parsed_List[i][0]):
+            if("Wednesday" in rawL[i][0]):
                 day = 2
-            if("Thursday" in parsed_List[i][0]):
+            if("Thursday" in rawL[i][0]):
                 day = 3
-            if("Friday" in parsed_List[i][0]):
+            if("Friday" in rawL[i][0]):
                 day = 4
-            if("Saturday" in parsed_List[i][0]):
+            if("Saturday" in rawL[i][0]):
                 day = 5
-            if("Sunday" in parsed_List[i][0]):
+            if("Sunday" in rawL[i][0]):
                 day = 6
 
-# this converts the, Street, Location, Street, Location into two lines and adds the day variable ie: 1, Street, Location \n 1, Street, Location.
-            if(len(parsed_List[i]) > 3):
-                holder = split(parsed_List[i], 2)
+            if(len(rawL[i]) > 3):
+                holder = split(rawL[i], 2)
                 holder[0].insert(0, day)
                 holder[1].insert(0, day)
                 week.insert(i, holder[1])
                 week.insert(i, holder[0])
 
-            if(len(parsed_List[i]) == 2):
-                parsed_List[i].insert(0, day)
-                week.insert(i, parsed_List[i])
+            if(len(rawL[i]) == 2):
+                rawL[i].insert(0, day)
+                week.insert(i, rawL[i])
 
-# Moves data from week to the specific day
+# Moves data from weeks to the specific day
         for i in range(0, len(week)):
             if(week[i][0] == "Location"):
                 del week[i]
