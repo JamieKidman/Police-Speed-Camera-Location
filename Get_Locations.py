@@ -40,7 +40,7 @@ def write(inWeek, day, dayN):
 
     f = open(filePath, "w+")
 
-#starting at 1 as the check fucking cops changed there format so that the date appears as date (large space) then the day
+#starting at 1 as the if they changed there format so that the date appears as date (large space) then the day
     for i in range(1, len(day)):
         f.write(day[i][1] + ",  \t" + day[i][0])
         f.write("\n")
@@ -76,10 +76,12 @@ def getData():
     # dateMon = (re.findall(r"[0-9]{6}", url)[0])
     print(dateMon)
 
+    # If the size is less than 27580 then something is wrong found by manual debugging
     if(len(r.content) > 27580):
         with open("/home/jamie/Documents/WebBusiness/Police/" + dateMon + ".pdf", 'wb') as f:
             f.write(r.content)
 
+        #The layout option for pdftotext was used as it made the data easier to parse
         os.system("pdftotext -layout /home/jamie/Documents/WebBusiness/Police/" + dateMon + ".pdf")
         os.system("cp /home/jamie/Documents/WebBusiness/Police/" + dateMon + ".txt" + " " + "/home/jamie/Documents/WebBusiness/Police/Backups")
 
@@ -89,7 +91,7 @@ def getData():
         print("DATA NOT WRITTEN, TRY AGAIN LATER")
 
 
-# So far this Reads all the text files in the dir good for bulk ingest
+# So far this reads all the text files in the dir good for bulk ingest, but could cause issues so NB
 def txt():
     os.chdir("/home/jamie/Documents/WebBusiness/Police/")
     for file in glob.glob("*.txt"):
@@ -118,8 +120,8 @@ def main(inFile):
         rawD = {}
         rawL = []
 
-# For the record I have no clue why it has to be read in as a dictionary but it errors out if changed to a list
 
+        # This isnt very pythonic and is C and Java like with the for loop indexes. Could also make parsing another function.
         for i in range(0, len(inLines)):
             inLines[i] = re.sub(r"[ \t]{2,}", r", ", inLines[i].rstrip())
             rawD[i] = inLines[i].split(", ")
@@ -148,6 +150,7 @@ def main(inFile):
                 i += 1
 
 # Sets a day value based on the last day thats been read
+# Could probaby redo this as setting a day variable is likely a bad fix to a bug.
         for i in range(0, len(rawL)):
             if("Monday" in rawL[i][0]):
                 day = 0
@@ -164,6 +167,7 @@ def main(inFile):
             if("Sunday" in rawL[i][0]):
                 day = 6
 
+            # Multiple locations could be on one line so this splits that up
             if(len(rawL[i]) > 3):
                 holder = split(rawL[i], 2)
                 holder[0].insert(0, day)
