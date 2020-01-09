@@ -1,5 +1,5 @@
 # Police-Speed-Camera-Location
-Downloads and parses a web downlaod with the speed camera locations of Western Australia
+Downloads and parses a web download with the speed camera locations of Western Australia
 
 Get_Locations:
 To Run, "python3 Get_Locations.py"
