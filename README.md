@@ -1,4 +1,6 @@
 # Police-Speed-Camera-Location
+No longer fucntional as the data is no longer published.
+
 Downloads and parses a web download with the speed camera locations of Western Australia
 
 Get_Locations:
